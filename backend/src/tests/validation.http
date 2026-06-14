@@ -1,0 +1,98 @@
+### Login als Admin
+# @name loginAdmin
+GET https://localhost/api/authenticate
+Authorization: Basic YWRtaW46MTIz
+
+@adminToken = {{loginAdmin.response.headers.Authorization}}
+
+
+### Login als manfred
+# @name loginManfred
+GET https://localhost/api/authenticate
+Authorization: Basic bWFuZnJlZDphc2Rm
+
+@manfredToken = {{loginManfred.response.headers.Authorization}}
+
+
+### Test 1: Passwort zu kurz (erwartet: 400)
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "testuser",
+    "firstName": "Test",
+    "lastName": "User",
+    "password": "123"
+}
+
+
+### Test 2: Ungültige E-Mail bei Registrierung (erwartet: 400)
+POST https://localhost/api/register
+Content-Type: application/json
+
+{
+    "userID": "testuser2",
+    "firstName": "Test",
+    "lastName": "User",
+    "password": "123456",
+    "email": "das-ist-keine-email"
+}
+
+
+### Test 3: Fehlende Pflichtfelder bei User (erwartet: 400)
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "testuser3",
+    "password": "123456"
+}
+
+
+### Test 4: Ungültiges Jahr in Bewerbung (erwartet: 400)
+POST https://localhost/api/degreeCourseApplications
+Authorization: {{manfredToken}}
+Content-Type: application/json
+
+{
+    "degreeCourseID": "abc",
+    "targetPeriodYear": 1900,
+    "targetPeriodShortName": "WiSe"
+}
+
+
+### Test 5: Ungültige Periode in Bewerbung (erwartet: 400) 值不合法
+POST https://localhost/api/degreeCourseApplications
+Authorization: {{manfredToken}}
+Content-Type: application/json
+
+{
+    "degreeCourseID": "abc",
+    "targetPeriodYear": 2024,
+    "targetPeriodShortName": "Falsch"
+}
+
+
+### Test 6: Fehlende Pflichtfelder bei Studiengang (erwartet: 400) 字段缺失没传输
+POST https://localhost/api/degreeCourses
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "universityName": "Beuth HS"
+}
+
+
+### Test 7: Korrekte Anfrage, sollte durchkommen (erwartet: 400 wegen existierendem User, nicht wegen Validierung)
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "admin",
+    "firstName": "Admin",
+    "lastName": "Admin",
+    "password": "123456"
+}

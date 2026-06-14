@@ -1,0 +1,108 @@
+### Login als Admin
+# @name loginAdmin
+GET https://localhost/api/authenticate
+Authorization: Basic YWRtaW46MTIz
+
+@adminToken = {{loginAdmin.response.headers.Authorization}}
+
+
+### Testuser mit E-Mail anlegen
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "qiyewang",
+    "firstName": "Qiye",
+    "lastName": "Wang",
+    "password": "asdf",
+    "email": "qiwa1910@bht-berlin.de"
+}
+
+
+### Login als qiyewang
+# @name loginQiyeWang
+GET https://localhost/api/authenticate
+Authorization: Basic cWl5ZXdhbmc6YXNkZg==
+
+@manfredToken = {{loginQiyeWang.response.headers.Authorization}}
+
+
+### Studiengang anlegen
+# @name createDegreeCourse
+POST https://localhost/api/degreeCourses
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "universityName": "Beuth Hochschule für Technik Berlin",
+    "universityShortName": "Beuth HS",
+    "departmentName": "Informatik und Medien",
+    "departmentShortName": "FB VI",
+    "name": "Informatik Bachelor",
+    "shortName": "INF-BA"
+}
+
+### 
+@degreeCourseID = {{createDegreeCourse.response.body.id}}
+
+
+### Bewerbung anlegen (status sollte automatisch "angelegt" sein)
+# @name createApplication
+POST https://localhost/api/degreeCourseApplications
+Authorization: {{manfredToken}}
+Content-Type: application/json
+
+{
+    "degreeCourseID": "{{degreeCourseID}}",
+    "targetPeriodYear": 2024,
+    "targetPeriodShortName": "WiSe"
+}
+
+###
+@applicationID = {{createApplication.response.body.id}}
+
+
+### Bewerbung abrufen (status = "angelegt")
+GET https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{adminToken}}
+
+
+### Status auf "angenommen" setzen - Admin sendet E-Mail an manfred (erwartet: 200, E-Mail Vorschau im Terminal)
+PUT https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "status": "angenommen"
+}
+
+
+### Bewerbung abrufen (status = "angenommen")
+GET https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{adminToken}}
+
+
+### Status auf "abgelehnt" setzen (erwartet: 200, neue E-Mail)
+PUT https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "status": "abgelehnt"
+}
+
+
+### Normaler User versucht Status zu ändern (erwartet: kein Statuswechsel, wird ignoriert)
+PUT https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{manfredToken}}
+Content-Type: application/json
+
+{
+    "status": "angenommen"
+}
+
+
+### Bewerbung abrufen (status bleibt "abgelehnt")
+GET https://localhost/api/degreeCourseApplications/{{applicationID}}
+Authorization: {{adminToken}}

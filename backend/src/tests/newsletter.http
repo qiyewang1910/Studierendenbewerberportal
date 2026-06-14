@@ -1,0 +1,66 @@
+### Login als Admin
+# @name loginAdmin
+GET https://localhost/api/authenticate
+Authorization: Basic YWRtaW46MTIz
+
+@adminToken = {{loginAdmin.response.headers.Authorization}}
+
+
+### Login als normaler User (manfred)
+# @name loginManfred
+GET https://localhost/api/authenticate
+Authorization: Basic bWFuZnJlZDphc2Rm
+
+@manfredToken = {{loginManfred.response.headers.Authorization}}
+
+
+### Test 1: Admin sendet Newsletter (erwartet: 200 mit Ergebnisliste)
+POST https://localhost/api/newsletter
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "subject": "Wichtige Neuigkeiten vom Bewerbungsportal",
+    "message": "Sehr geehrte Bewerber,\n\nwir möchten Sie über neue Studiengänge informieren.\n\nBitte besuchen Sie unser Portal."
+}
+
+
+### Test 2: Normaler User versucht Newsletter zu senden (erwartet: 403)
+POST https://localhost/api/newsletter
+Authorization: {{manfredToken}}
+Content-Type: application/json
+
+{
+    "subject": "Test",
+    "message": "Test"
+}
+
+
+### Test 3: Fehlende subject (erwartet: 400)
+POST https://localhost/api/newsletter
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "message": "Nur eine Nachricht ohne Betreff"
+}
+
+
+### Test 4: Fehlende message (erwartet: 400)
+POST https://localhost/api/newsletter
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "subject": "Nur ein Betreff"
+}
+
+
+### Test 5: Kein Token (erwartet: 401)
+POST https://localhost/api/newsletter
+Content-Type: application/json
+
+{
+    "subject": "Test",
+    "message": "Test"
+}

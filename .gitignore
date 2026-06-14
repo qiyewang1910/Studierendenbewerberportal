@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment variables (contains passwords!)
+.env
+backend/.env
+backend/src/.env
+
+# SSL certificates (contains private key!)
+cert/
+backend/cert/
+
+# Uploaded files
+uploads/
+backend/uploads/
+
+# MacOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Build output
+dist/
+backend/dist/
+
+# Zip and PDF files
+*.zip
+*.pdf
+
+# Logs
+*.log

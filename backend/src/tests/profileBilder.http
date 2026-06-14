@@ -1,0 +1,106 @@
+### Login als Admin 
+# @name loginAdmin
+GET https://localhost/api/authenticate
+Authorization: Basic YWRtaW46MTIz
+
+@adminToken = {{loginAdmin.response.headers.Authorization}}
+
+
+### Testuser anlegen (falls noch nicht vorhanden)
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "manfred",
+    "firstName": "Manfred",
+    "lastName": "Müller",
+    "password": "asdf"
+}
+
+
+### Login als manfred
+# @name loginManfred
+GET https://localhost/api/authenticate
+Authorization: Basic bWFuZnJlZDphc2Rm
+
+@manfredToken = {{loginManfred.response.headers.Authorization}}
+
+
+### Profilbild hochladen als Admin für manfred (erwartet: 201) ────
+POST https://localhost/api/users/manfred/profilebilder
+Authorization: {{adminToken}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="profilebilder"; filename="testbild.jpg"
+Content-Type: image/jpeg
+
+< ./testbild.jpg
+------Boundary--
+
+
+### Profilbild abrufen (kein Login nötig, erwartet: Bilddatei)
+GET https://localhost/api/users/manfred/profilebilder
+
+
+### Profilbild hochladen als manfred für sich selbst (erwartet: 201)
+POST https://localhost/api/users/manfred/profilebilder
+Authorization: {{manfredToken}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="profilebilder"; filename="testbild.jpg"
+Content-Type: image/jpeg
+
+< ./testbild.jpg
+------Boundary--
+
+
+### Profilbild hochladen ohne Login (erwartet: 401) 
+POST https://localhost/api/users/manfred/profilebilder
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="profilebilder"; filename="testbild.jpg"
+Content-Type: image/jpeg
+
+< ./testbild.jpg
+------Boundary--
+
+
+# susi versucht, manfreds Bild hochzuladen
+### Profilbild hochladen als falscher User (erwartet: 403)
+POST https://localhost/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+    "userID": "susi",
+    "firstName": "Susi",
+    "lastName": "Sunkist",
+    "password": "asdf"
+}
+
+###
+# @name loginSusi
+GET https://localhost/api/authenticate
+Authorization: Basic c3VzaTphc2Rm
+
+@susiToken = {{loginSusi.response.headers.Authorization}}
+
+###
+POST https://localhost/api/users/manfred/profilebilder
+Authorization: {{susiToken}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="profilebilder"; filename="testbild.jpg"
+Content-Type: image/jpeg
+
+< ./testbild.jpg
+------Boundary--
+
+
+### Bild von User ohne Profilbild abrufen (erwartet: 404)
+GET https://localhost/api/users/susi/profilebilder

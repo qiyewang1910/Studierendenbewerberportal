@@ -1,0 +1,59 @@
+### Neuen User registrieren (erwartet: 201, Aktivierungs-E-Mail wird gesendet)
+# Aktivierungslink erscheint im Terminal als Vorschau-URL
+POST https://localhost/api/register
+Content-Type: application/json
+
+{
+    "userID": "thomas",
+    "firstName": "Thomas",
+    "lastName": "Schmidt",
+    "password": "test123",
+    "email": "whereisqiye@gmail.com"
+}
+
+
+### Login vor Aktivierung versuchen (erwartet: 403 Account not activated)
+GET https://localhost/api/authenticate
+Authorization: Basic dGhvbWFzOnRlc3QxMjM=
+
+
+### Account aktivieren - Token aus dem Terminal kopieren und hier einfügen
+# Beispiel: GET https://localhost/api/activate/550e8400-e29b-41d4-a716-446655440000
+GET https://localhost/api/activate/ed944812-9554-4eb2-916d-7b4fee22ac3c
+
+
+### Login nach Aktivierung (erwartet: 200 mit Token)
+# @name loginThomas
+GET https://localhost/api/authenticate
+Authorization: Basic dGhvbWFzOnRlc3QxMjM=
+
+@thomasToken = {{loginThomas.response.headers.Authorization}}
+
+
+### Eigenes Profil abrufen (erwartet: 200)
+GET https://localhost/api/users/thomas
+Authorization: {{thomasToken}}
+
+
+### Registrierung mit bereits vorhandener userID (erwartet: 409)
+POST https://localhost/api/register
+Content-Type: application/json
+
+{
+    "userID": "thomas",
+    "firstName": "Thomas",
+    "lastName": "Müller",
+    "password": "anderes123",
+    "email": "whereisqiye@gmail.com"
+}
+
+
+### Registrierung ohne Pflichtfeld (erwartet: 400)
+POST https://localhost/api/register
+Content-Type: application/json
+
+{
+    "userID": "anna",
+    "firstName": "Anna",
+    "password": "test123"
+}
