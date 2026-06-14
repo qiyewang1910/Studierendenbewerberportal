@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
-import { checkToken, checkAdmin } from '../../utils/authMiddleware';
-import UserModel from '../user/UserModel';
-import { EmailService } from '../../utils/EmailService';
+import { checkToken, checkAdmin } from './authMiddleware';
+import UserModel from '../endpoints/user/UserModel';
+import { EmailService } from './EmailService';
 
 const router = express.Router();
 
