@@ -25,7 +25,7 @@ export class UserService {
         const saltRounds = 10;
         userData.password = await bcrypt.hash(userData.password, saltRounds);
 
-        userData.isActive = true; // 新增，为了创建用户时配合邮件激活
+        userData.isActive = true; // 为了创建用户时配合邮件激活
         const newUser = new UserModel(userData);
         return await newUser.save();
     }
